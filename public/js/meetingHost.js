@@ -416,6 +416,8 @@ class HostMeeting {
     this.maxParticipantsPerSet = 15;
     this.currentSidebarSet = 0;
     this.maxSidebarParticipants = 5;
+    this.meetingStartTime = null;
+    this.meetingName = '';
     
     this.meetingPermissions = {
       chatEnabled: true,
@@ -439,6 +441,19 @@ class HostMeeting {
     this.updateTime();
     this.joinMeeting();
     this.showMeetingInfo();
+    
+    // Set meeting start time
+    this.meetingStartTime = new Date();
+    
+    // Get meeting name from URL or generate one
+    const urlParams = new URLSearchParams(window.location.search);
+    this.meetingName = urlParams.get('name') || `Meeting ${new Date().toLocaleString()}`;
+    
+    // Update meeting title if element exists
+    const meetingTitleEl = document.querySelector('.meeting-title, #meetingTitle');
+    if (meetingTitleEl) {
+        meetingTitleEl.textContent = this.meetingName;
+    }
     
     // Initialize WebRTC and show local video immediately
     const initialized = await this.webrtc.initialize();
@@ -499,6 +514,13 @@ class HostMeeting {
       }
       this.updateMeetingTitle();
       this.updateRaisedHands(data.raisedHands);
+      
+      // Notify about meeting start
+      this.socket.emit('meeting-started', {
+          meetingId: this.meetingId,
+          meetingName: this.meetingName,
+          userId: this.userId
+      });
     });
 
     this.socket.on('participant-joined', (data) => {
@@ -1488,6 +1510,17 @@ class HostMeeting {
 
   endMeeting() {
     if (confirm('Are you sure you want to end the meeting for everyone?')) {
+      // Notify about meeting end
+      if (this.socket && this.meetingId && this.userId) {
+          this.socket.emit('meeting-ended', {
+              meetingId: this.meetingId,
+              meetingName: this.meetingName,
+              userId: this.userId,
+              startTime: this.meetingStartTime,
+              endTime: new Date()
+          });
+      }
+      
       this.socket.emit('end-meeting');
       window.location.href = '/dashboard';
     }
