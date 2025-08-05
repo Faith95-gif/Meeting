@@ -23,6 +23,7 @@ import { setupParticipantControl } from './modules/participantControl.js';
 import { setupMeetingScheduler } from './modules/meetingScheduler.js';
 import { setupMeetingStatsRoutes, setupMeetingStatsSocket } from './modules/meetingStats.js';
 import { setupMeetingBooking } from './modules/meetingBooking.js'; // New import
+import { setupMeetingActivity } from './modules/meetingActivity.js'; // New import
 
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -83,6 +84,9 @@ const schedulerAPI = setupMeetingScheduler(app, io);
 
 // Setup meeting booking functionality (NEW)
 const bookingAPI = setupMeetingBooking(app, io);
+
+// Setup meeting activity tracking functionality (NEW)
+const activityAPI = setupMeetingActivity(app, io);
 
 // Setup meeting statistics functionality
 setupMeetingStatsRoutes(app);
@@ -252,6 +256,9 @@ io.on('connection', (socket) => {
   // Setup meeting booking handlers for this socket (NEW)
   const { handleDisconnect: handleBookingDisconnect } = bookingAPI.setupSocketHandlers(socket);
   
+  // Setup meeting activity handlers for this socket (NEW)
+  const { handleDisconnect: handleActivityDisconnect } = activityAPI.setupSocketHandlers(socket);
+  
   // Setup meeting stats handlers for this socket
   const { handleDisconnect: handleStatsDisconnect } = meetingStatsAPI.setupSocketHandlers(socket);
   
@@ -292,6 +299,9 @@ io.on('connection', (socket) => {
     
     // Handle booking cleanup (NEW)
     handleBookingDisconnect();
+    
+    // Handle activity cleanup (NEW)
+    handleActivityDisconnect();
     
     // Handle stats cleanup
     handleStatsDisconnect();

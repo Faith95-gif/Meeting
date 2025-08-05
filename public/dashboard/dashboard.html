@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Call Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-video"></i>
+                    <span>VideoCall</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/host" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Start Meeting</span>
+                </a>
+                <a href="/join" class="nav-item">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Join Meeting</span>
+                </a>
+                <a href="/scheduler" class="nav-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Schedule</span>
+                </a>
+                <a href="/booking" class="nav-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Book Meeting</span>
+                </a>
+                <a href="/upcoming" class="nav-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Upcoming</span>
+                </a>
+                <a href="/chat" class="nav-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat</span>
+                </a>
+                <a href="/files" class="nav-item">
+                    <i class="fas fa-folder"></i>
+                    <span>Files</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-outline" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back! Ready to connect?</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-avatar">
+                            <img id="userAvatar" src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="User">
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Loading...</div>
+                            <div class="user-email" id="userEmail">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <div class="action-card primary" onclick="window.location.href='/host'">
+                    <div class="action-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Start Meeting</h3>
+                        <p>Begin a new video call instantly</p>
+                    </div>
+                </div>
+                
+                <div class="action-card secondary" onclick="window.location.href='/join'">
+                    <div class="action-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Join Meeting</h3>
+                        <p>Enter a meeting with ID</p>
+                    </div>
+                </div>
+                
+                <div class="action-card tertiary" onclick="window.location.href='/scheduler'">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Schedule</h3>
+                        <p>Plan your meetings ahead</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Grid -->
+            <section class="dashboard-grid">
+                <!-- Meeting Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Meeting Statistics</h3>
+                        <button class="btn btn-text">View Details</button>
+                    </div>
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalMeetings">0</div>
+                                <div class="stat-label">Total Meetings</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalHours">0h</div>
+                                <div class="stat-label">Total Hours</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="avgDuration">0m</div>
+                                <div class="stat-label">Avg Duration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                        <button class="btn btn-text">View All</button>
+                    </div>
+                    <div class="card-content">
+                        <div class="activity-list" id="activityList">
+                            <!-- Activities will be loaded here -->
+                            <div class="activity-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Loading activities...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Settings -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Quick Settings</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">Camera</div>
+                                    <div class="setting-desc">Default camera settings</div>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="cameraToggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">Microphone</div>
+                                    <div class="setting-desc">Default microphone settings</div>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="micToggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">Notifications</div>
+                                    <div class="setting-desc">Meeting notifications</div>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="notificationToggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Meetings -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Upcoming Meetings</h3>
+                        <button class="btn btn-text" onclick="window.location.href='/upcoming'">View All</button>
+                    </div>
+                    <div class="card-content">
+                        <div class="meeting-list" id="upcomingMeetings">
+                            <div class="meeting-item">
+                                <div class="meeting-time">
+                                    <div class="time">10:00 AM</div>
+                                    <div class="date">Today</div>
+                                </div>
+                                <div class="meeting-info">
+                                    <div class="meeting-title">Team Standup</div>
+                                    <div class="meeting-participants">
+                                        <i class="fas fa-users"></i>
+                                        <span>5 participants</span>
+                                    </div>
+                                </div>
+                                <div class="meeting-actions">
+                                    <button class="btn btn-sm btn-primary">Join</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
