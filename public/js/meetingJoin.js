@@ -10,6 +10,8 @@ class WebRTCManager {
           this.isReady = false;
           this.originalMicrophoneTrack = null;
           this.streamAttachRetries = new Map(); // Track retry attempts
+          this.meetingStartTime = null;
+          this.meetingName = '';
           
           this.configuration = {
             iceServers: [
@@ -48,6 +50,12 @@ class WebRTCManager {
 
         async initialize() {
           try {
+            // Set meeting start time
+            this.meetingStartTime = new Date();
+            
+            // Get meeting name (will be updated when we receive meeting info)
+            this.meetingName = `Meeting ${window.location.pathname.split('/').pop()}`;
+            
             this.localStream = await navigator.mediaDevices.getUserMedia({
               video: { 
                 width: { ideal: 1280 }, 
@@ -66,6 +74,12 @@ class WebRTCManager {
             
             // Start audio level monitoring
             this.startAudioLevelMonitoring();
+            
+            // Notify about participant joining
+            this.socket.emit('participant-joined', {
+                meetingId: window.location.pathname.split('/').pop(),
+                userId: window.currentUserId
+            });
             
             console.log('Local stream initialized');
             return true;
@@ -641,6 +655,42 @@ class WebRTCManager {
 
           this.isScreenSharing = false;
           console.log('Screen share stopped successfully');
+        }
+
+        leaveMeeting() {
+          try {
+            // Notify about participant leaving
+            if (this.socket && window.currentUserId) {
+              this.socket.emit('participant-left', {
+                  meetingId: window.location.pathname.split('/').pop(),
+                  userId: window.currentUserId
+              });
+            }
+            
+            // Stop local stream
+            if (this.localStream) {
+              this.localStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Stop screen stream
+            if (this.screenStream) {
+              this.screenStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Close all peer connections
+            this.peerConnections.forEach(pc => pc.close());
+            this.peerConnections.clear();
+            this.remoteStreams.clear();
+            
+            // Close audio context
+            if (this.audioContext) {
+              this.audioContext.close();
+            }
+            
+            console.log('WebRTC cleanup completed');
+          } catch (error) {
+            console.error('Error during WebRTC cleanup:', error);
+          }
         }
       }
 
@@ -1639,6 +1689,7 @@ class WebRTCManager {
 
         leaveMeeting() {
           if (confirm('Are you sure you want to leave the meeting?')) {
+            this.webrtc.leaveMeeting();
             this.socket.disconnect();
             window.location.href = '/dashboard';
           }
@@ -1753,4 +1804,3 @@ class WebRTCManager {
           }
         }, 3000); // Wait 3 seconds for everything to load
       });
-      
